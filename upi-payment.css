@@ -1,0 +1,294 @@
+/* UPI Payment Styles */
+
+/* Withdrawal Form Container */
+.withdrawal-container {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.balance-card {
+    flex: 1;
+    min-width: 250px;
+    background: #f8fdff;
+    padding: 25px;
+    border-radius: 10px;
+    border: 1px solid #e0f0ff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+    text-align: center;
+}
+
+.balance-amount {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: #2c3e50;
+    margin: 15px 0;
+}
+
+.withdrawal-form-container {
+    flex: 2;
+    min-width: 300px;
+    background: #fefefe;
+    padding: 25px 30px;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+}
+
+/* UPI App Selector */
+.upi-app-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.upi-app-option {
+    position: relative;
+    flex: 1;
+    min-width: 100px;
+}
+
+.upi-app-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.upi-app-option label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.upi-app-option input[type="radio"]:checked + label {
+    background-color: #e1f5fe;
+    border-color: #3498db;
+    box-shadow: 0 2px 5px rgba(52, 152, 219, 0.2);
+}
+
+.upi-app-option label i {
+    font-size: 24px;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+.upi-app-option input[type="radio"]:checked + label i {
+    color: #3498db;
+}
+
+.upi-app-option label span {
+    font-size: 0.85em;
+    font-weight: 500;
+}
+
+/* Success and Error Messages */
+.success-message, .error-message {
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+}
+
+.success-message {
+    background-color: #e8f5e9;
+    border: 1px solid #a5d6a7;
+    color: #2e7d32;
+}
+
+.error-message {
+    background-color: #ffebee;
+    border: 1px solid #ef9a9a;
+    color: #c62828;
+}
+
+.success-message i, .error-message i {
+    font-size: 18px;
+    margin-right: 10px;
+}
+
+.withdrawal-id {
+    display: block;
+    font-size: 0.9em;
+    margin-top: 5px;
+    color: #555;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    text-align: center;
+    padding: 10px;
+    color: #3498db;
+}
+
+/* Modal for UPI Payment */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    position: relative;
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    width: 80%;
+    max-width: 600px;
+}
+
+.close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #333;
+}
+
+/* QR Code Container */
+.qr-code-container {
+    text-align: center;
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f5f5f5;
+    border-radius: 10px;
+}
+
+.qr-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-image {
+    width: 200px;
+    height: 200px;
+    background-color: #fff;
+    border: 1px dashed #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #666;
+}
+
+.qr-text {
+    font-size: 0.95em;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+.upi-link {
+    font-size: 0.85em;
+    color: #3498db;
+    word-break: break-all;
+    background: #e1f5fe;
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+/* UPI App Options */
+.upi-app-options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.upi-app-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 80px;
+    margin: 0;
+}
+
+.upi-app-button:hover {
+    background-color: #f5f5f5;
+    border-color: #bbb;
+}
+
+.app-icon {
+    width: 40px;
+    height: 40px;
+    background-color: #e1f5fe;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #3498db;
+}
+
+.app-name {
+    font-size: 0.8em;
+    text-align: center;
+}
+
+/* Payment Note */
+.payment-note {
+    background-color: #fff8e1;
+    border-left: 4px solid #ffc107;
+    padding: 10px 15px;
+    margin-top: 20px;
+    font-size: 0.9em;
+    color: #555;
+}
+
+.payment-note i {
+    color: #ffa000;
+    margin-right: 5px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .withdrawal-container {
+        flex-direction: column;
+    }
+    
+    .upi-app-selector {
+        justify-content: center;
+    }
+    
+    .upi-app-option {
+        min-width: 80px;
+    }
+    
+    .modal-content {
+        width: 90%;
+        margin: 15% auto;
+        padding: 20px;
+    }
+}
