@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Withdraw Funds - Skill Match Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='upi-payment.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-wallet"></i>
+            </div>
+            <h1>Withdraw Funds</h1>
+            <p>Transfer your earnings to your preferred payment method</p>
+        </header>
+        
+        <div class="withdrawal-container">
+            <div class="balance-card">
+                <h2><i class="fas fa-coins"></i> Available Balance</h2>
+                <div class="balance-amount">${{ user.balance }}</div>
+            </div>
+            
+            <div class="withdrawal-form-container">
+                <h2><i class="fas fa-money-bill-transfer"></i> Withdraw Funds</h2>
+                <div class="message-container"></div>
+                
+                <form id="withdrawal-form">
+                    <div class="form-group">
+                        <label for="withdrawal-amount">Amount to Withdraw (₹)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-rupee-sign"></i>
+                            <input type="number" id="withdrawal-amount" name="amount" 
+                                min="100" max="{{ user.balance }}" step="0.01" 
+                                placeholder="Enter amount" required>
+                        </div>
+                        <small class="hint">Minimum withdrawal: ₹100</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="payment-method">Payment Method</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-credit-card"></i>
+                            <select id="payment-method" name="payment_method" class="payment-method-select" required>
+                                <option value="">Select payment method</option>
+                                <option value="bank">Bank Transfer</option>
+                                <option value="upi">UPI Payment (BHIM, GPay, PhonePe)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="bank-fields" style="display: none;">
+                        <div class="form-group">
+                            <label for="account-name">Account Holder Name</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-user"></i>
+                                <input type="text" id="account-name" name="account_name" placeholder="Enter account holder name">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="account-number">Account Number</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-hashtag"></i>
+                                <input type="text" id="account-number" name="account_number" placeholder="Enter account number">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="ifsc-code">IFSC Code</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-building-columns"></i>
+                                <input type="text" id="ifsc-code" name="ifsc_code" placeholder="Enter IFSC code">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="upi-fields" style="display: none;">
+                        <div class="form-group">
+                            <label for="upi-id">UPI ID</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-at"></i>
+                                <input type="text" id="upi-id" name="upi_id" placeholder="yourname@upi">
+                            </div>
+                            <small class="hint">Example: yourname@okicici, yourname@oksbi, etc.</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Preferred UPI App</label>
+                            <div class="upi-app-selector">
+                                <div class="upi-app-option">
+                                    <input type="radio" id="app-any" name="upi_app" value="any" checked>
+                                    <label for="app-any">
+                                        <i class="fas fa-mobile-screen"></i>
+                                        <span>Any UPI App</span>
+                                    </label>
+                                </div>
+                                <div class="upi-app-option">
+                                    <input type="radio" id="app-bhim" name="upi_app" value="bhim">
+                                    <label for="app-bhim">
+                                        <i class="fas fa-b"></i>
+                                        <span>BHIM</span>
+                                    </label>
+                                </div>
+                                <div class="upi-app-option">
+                                    <input type="radio" id="app-gpay" name="upi_app" value="gpay">
+                                    <label for="app-gpay">
+                                        <i class="fab fa-google-pay"></i>
+                                        <span>Google Pay</span>
+                                    </label>
+                                </div>
+                                <div class="upi-app-option">
+                                    <input type="radio" id="app-phonepe" name="upi_app" value="phonepe">
+                                    <label for="app-phonepe">
+                                        <i class="fas fa-p"></i>
+                                        <span>PhonePe</span>
+                                    </label>
+                                </div>
+                                <div class="upi-app-option">
+                                    <input type="radio" id="app-paytm" name="upi_app" value="paytm">
+                                    <label for="app-paytm">
+                                        <i class="fas fa-wallet"></i>
+                                        <span>Paytm</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-paper-plane"></i> Submit Withdrawal Request
+                    </button>
+                    <div class="loading-spinner" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i> Processing request...
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div id="upi-payment-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2><i class="fas fa-qrcode"></i> UPI Payment</h2>
+                
+                <div id="upi-qr-code" class="qr-code-container"></div>
+                
+                <h3>Pay using UPI App</h3>
+                <div id="upi-app-options" class="upi-app-options"></div>
+                
+                <div class="payment-note">
+                    <p><i class="fas fa-info-circle"></i> Your withdrawal request has been submitted. 
+                    Once payment is verified, the amount will be credited to your UPI account.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='skill-match-api.js') }}"></script>
+    <script src="{{ url_for('static', filename='upi-payment-integration.js') }}"></script>
+    <script>
+        // Modal handling
+        const modal = document.getElementById('upi-payment-modal');
+        const closeBtn = document.getElementsByClassName('close')[0];
+        
+        if (closeBtn) {
+            closeBtn.onclick = function() {
+                modal.style.display = 'none';
+            }
+        }
+        
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        // Payment method toggle
+        document.getElementById('payment-method').addEventListener('change', function() {
+            const bankFields = document.querySelector('.bank-fields');
+            const upiFields = document.querySelector('.upi-fields');
+            
+            if (this.value === 'bank') {
+                bankFields.style.display = 'block';
+                upiFields.style.display = 'none';
+            } else if (this.value === 'upi') {
+                bankFields.style.display = 'none';
+                upiFields.style.display = 'block';
+            } else {
+                bankFields.style.display = 'none';
+                upiFields.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

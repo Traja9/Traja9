@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Skill Match Platform</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-handshake"></i>
+            </div>
+            <h1>Skill Match Platform</h1>
+            <p>Connect with skilled freelancers or find projects that match your expertise</p>
+        </header>
+        
+        <div class="auth-forms">
+            <div class="form-container login-form">
+                <h2><i class="fas fa-sign-in-alt"></i> Login</h2>
+                <div id="login-error" class="error-message"></div>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-username">Username</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="login-username" name="username" placeholder="Enter your username" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="login-password" name="password" placeholder="Enter your password" required>
+                            <i class="fas fa-eye toggle-password" data-target="login-password"></i>
+                        </div>
+                    </div>
+                    <div class="form-group remember-me">
+                        <input type="checkbox" id="remember" name="remember">
+                        <label for="remember">Remember me</label>
+                    </div>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </button>
+                    <div class="loading-spinner" id="login-spinner" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i> Logging in...
+                    </div>
+                </form>
+            </div>
+            
+            <div class="form-container register-form">
+                <h2><i class="fas fa-user-plus"></i> Register</h2>
+                <div id="register-error" class="error-message"></div>
+                <form id="register-form">
+                    <div class="form-group">
+                        <label for="reg-username">Username</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="reg-username" name="username" placeholder="Choose a username" required>
+                        </div>
+                        <small class="hint">Username must be at least 4 characters</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-password">Password</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="reg-password" name="password" placeholder="Choose a password" required>
+                            <i class="fas fa-eye toggle-password" data-target="reg-password"></i>
+                        </div>
+                        <small class="hint">Password must be at least 6 characters</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-type">I am a:</label>
+                        <div class="user-type-selector">
+                            <div class="user-type-option">
+                                <input type="radio" id="client-type" name="user_type" value="client" checked>
+                                <label for="client-type">
+                                    <i class="fas fa-briefcase"></i>
+                                    <span>Client</span>
+                                    <small>I need work done</small>
+                                </label>
+                            </div>
+                            <div class="user-type-option">
+                                <input type="radio" id="freelancer-type" name="user_type" value="freelancer">
+                                <label for="freelancer-type">
+                                    <i class="fas fa-laptop-code"></i>
+                                    <span>Freelancer</span>
+                                    <small>I offer services</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="freelancer-fields" class="hidden-section">
+                        <div class="form-group">
+                            <label for="skills">Skills (comma separated)</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-tools"></i>
+                                <input type="text" id="skills" name="skills" placeholder="e.g. JavaScript, Python, Design">
+                            </div>
+                            <div id="skills-tags" class="skills-tags"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="hourly-rate">Hourly Rate (₹)</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-rupee-sign"></i>
+                                <input type="number" id="hourly-rate" name="hourly_rate" min="1" placeholder="Your hourly rate">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-user-plus"></i> Register
+                    </button>
+                    <div class="loading-spinner" id="register-spinner" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i> Creating account...
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div id="success-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h2>Registration Successful!</h2>
+                <p>Your account has been created successfully.</p>
+                <p>You can now log in with your credentials.</p>
+                <button id="go-to-login" class="btn-primary">Go to Login</button>
+            </div>
+        </div>
+    </div>
+        <!-- Add this right after the success modal in index.html -->
+    <div id="nav-menu-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Welcome to Skill Match Platform</h2>
+            <div class="navigation-menu">
+                <div class="nav-item">
+                    <a href="dashboard.html" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="jobs.html" class="nav-link">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Find Jobs</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="freelancer.html" class="nav-link">
+                    <i class="fas fa-users"></i>
+                    <span>Find Freelancers</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="withdrawal.html" class="nav-link">
+                    <i class="fas fa-wallet"></i>
+                    <span>Withdraw Funds</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+    
+    <footer>
+        <p>&copy; 2025 Skill Match Platform. All rights reserved.</p>
+    </footer>
+    
+    <script>
+        // Toggle password visibility
+        document.querySelectorAll('.toggle-password').forEach(icon => {
+            icon.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const input = document.getElementById(targetId);
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    this.classList.remove('fa-eye');
+                    this.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    this.classList.remove('fa-eye-slash');
+                    this.classList.add('fa-eye');
+                }
+            });
+        });
+        
+        // Toggle freelancer fields visibility
+        document.getElementById('freelancer-type').addEventListener('change', function() {
+            document.getElementById('freelancer-fields').classList.remove('hidden-section');
+        });
+        
+        document.getElementById('client-type').addEventListener('change', function() {
+            document.getElementById('freelancer-fields').classList.add('hidden-section');
+        });
+        
+        // Skills tags input
+        document.getElementById('skills').addEventListener('input', function() {
+            const skillsInput = this.value;
+            const skillsArray = skillsInput.split(',').filter(skill => skill.trim() !== '').map(skill => skill.trim());
+            
+            const skillsTagsContainer = document.getElementById('skills-tags');
+            skillsTagsContainer.innerHTML = '';
+            
+            skillsArray.forEach(skill => {
+                if (skill) {
+                    const tag = document.createElement('span');
+                    tag.className = 'skill-tag';
+                    tag.textContent = skill;
+                    skillsTagsContainer.appendChild(tag);
+                }
+            });
+        });
+        
+        // Form validation
+        function validateForm(formId) {
+            const form = document.getElementById(formId);
+            let isValid = true;
+            
+            if (formId === 'register-form') {
+                const username = document.getElementById('reg-username').value;
+                const password = document.getElementById('reg-password').value;
+                
+                if (username.length < 4) {
+                    showError('register-error', 'Username must be at least 4 characters');
+                    isValid = false;
+                }
+                
+                if (password.length < 6) {
+                    showError('register-error', 'Password must be at least 6 characters');
+                    isValid = false;
+                }
+                
+                const isFreelancer = document.getElementById('freelancer-type').checked;
+                if (isFreelancer) {
+                    const skills = document.getElementById('skills').value;
+                    const hourlyRate = document.getElementById('hourly-rate').value;
+                    
+                    if (!skills) {
+                        showError('register-error', 'Please enter at least one skill');
+                        isValid = false;
+                    }
+                    
+                    if (!hourlyRate) {
+                        showError('register-error', 'Please enter your hourly rate');
+                        isValid = false;
+                    }
+                }
+            }
+            
+            return isValid;
+        }
+        
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                errorElement.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Modal functionality
+        const modal = document.getElementById('success-modal');
+        const closeBtn = document.getElementsByClassName('close')[0];
+        const goToLoginBtn = document.getElementById('go-to-login');
+        
+        closeBtn.onclick = function() {
+            modal.style.display = 'none';
+        }
+        
+        goToLoginBtn.onclick = function() {
+            modal.style.display = 'none';
+            // Scroll to login form
+            document.querySelector('.login-form').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        // Login form submission
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            document.getElementById('login-spinner').style.display = 'block';
+            
+            fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: document.getElementById('login-username').value,
+                    password: document.getElementById('login-password').value
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('login-spinner').style.display = 'none';
+                
+                if (data.success) {
+                    window.location.href = '/dashboard';
+                } else {
+                    showError('login-error', 'Login failed: ' + data.error);
+                }
+            })
+            .catch(error => {
+                document.getElementById('login-spinner').style.display = 'none';
+                showError('login-error', 'Network error. Please try again.');
+                console.error('Login error:', error);
+            });
+        });
+        
+        // Registration form submission
+        document.getElementById('register-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!validateForm('register-form')) {
+                return;
+            }
+            
+            document.getElementById('register-spinner').style.display = 'block';
+            
+            const isFreelancer = document.getElementById('freelancer-type').checked;
+            const userType = isFreelancer ? 'freelancer' : 'client';
+            
+            const payload = {
+                username: document.getElementById('reg-username').value,
+                password: document.getElementById('reg-password').value,
+                user_type: userType
+            };
+            
+            if (isFreelancer) {
+                payload.skills = document.getElementById('skills').value.split(',').map(s => s.trim()).filter(s => s !== '');
+                payload.hourly_rate = parseFloat(document.getElementById('hourly-rate').value) || 0;
+            }
+            
+            fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('register-spinner').style.display = 'none';
+                
+                if (data.success) {
+                    document.getElementById('login-username').value = payload.username;
+                    document.getElementById('register-form').reset();
+                    
+                    // Show success modal
+                    modal.style.display = 'block';
+                } else {
+                    showError('register-error', 'Registration failed: ' + data.error);
+                }
+            })
+            .catch(error => {
+                document.getElementById('register-spinner').style.display = 'none';
+                showError('register-error', 'Network error. Please try again.');
+                console.error('Registration error:', error);
+            });
+        });
+    </script>
+    <script src="{{ url_for('static', filename='skill-match-api.js') }}"></script>
+        <script src="{{ url_for('static', filename='upi-payment-integration.js') }}"></script>
+</body>
+</html>

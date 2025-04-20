@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Freelancer Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="dashboard">
+        <h1>Welcome, {{ user.username }} 👋</h1>
+
+        <div class="card">
+            <h2>Account Info</h2>
+            <p><strong>User Type:</strong> {{ user.user_type }}</p>
+            <p><strong>Balance:</strong> ₹{{ user.balance }}</p>
+            <p><strong>Rating:</strong> {{ user.rating }}</p>
+            <p><strong>Completed Jobs:</strong> {{ user.completed_jobs }}</p>
+        </div>
+
+        <div class="card">
+            <h2>Monthly Earnings</h2>
+            <div class="chart-container">
+                <canvas id="earningsChart"></canvas>
+            </div>
+        </div>
+
+        {% if user.id == 1 %}
+        <div class="card">
+            <h2>Premium Features (Admin Only)</h2>
+            {% if user.is_premium %}
+                <p style="color: green; font-weight: bold;">🌟 Premium Activated</p>
+            {% else %}
+                <button onclick="buyPremium()">Buy Premium (₹0.00)</button>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Chart.js for Earnings Chart -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        fetch('/api/earnings')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) return;
+
+                const labels = Object.keys(data.earnings_by_month);
+                const values = Object.values(data.earnings_by_month);
+
+                new Chart(document.getElementById('earningsChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Earnings (₹)',
+                            data: values,
+                            backgroundColor: '#3498db'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            });
+
+        function buyPremium() {
+            fetch('/api/buy_premium', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Premium activated!");
+                        location.reload();
+                    } else {
+                        alert("Error: " + data.error);
+                    }
+                });
+        }
+    </script>
+</body>
+</html>

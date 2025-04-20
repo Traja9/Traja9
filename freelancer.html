@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Find Freelancers - Skill Match Platform</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-handshake"></i>
+            </div>
+            <h1>Find Freelancers</h1>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="/dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="/jobs"><i class="fas fa-briefcase"></i> Find Jobs</a></li>
+                    <li class="active"><a href="/freelancers"><i class="fas fa-users"></i> Find Freelancers</a></li>
+                    <li><a href="/withdrawal"><i class="fas fa-wallet"></i> Withdraw Funds</a></li>
+                </ul>
+            </nav>
+        </header>
+        
+        <div class="content-area">
+            <div class="search-filters">
+                <h2>Filter Freelancers</h2>
+                <form id="freelancer-filter-form">
+                    <div class="form-group">
+                        <label for="skills-filter">Skills</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-tools"></i>
+                            <input type="text" id="skills-filter" name="skills" placeholder="e.g. JavaScript, Python, Design">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="max-rate">Maximum Hourly Rate (₹)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-rupee-sign"></i>
+                            <input type="number" id="max-rate" name="max_rate" min="0" placeholder="Maximum hourly rate">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="min-rating">Minimum Rating</label>
+                        <div class="rating-selector">
+                            <select id="min-rating" name="min_rating">
+                                <option value="">Any rating</option>
+                                <option value="3">3+ stars</option>
+                                <option value="4">4+ stars</option>
+                                <option value="4.5">4.5+ stars</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </form>
+            </div>
+            
+            <div class="results-area">
+                <h2>Available Freelancers</h2>
+                <div id="freelancers-container" class="cards-container">
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i> Loading freelancers...
+                    </div>
+                </div>
+                
+                <div id="no-freelancers-message" class="empty-message" style="display: none;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>No freelancers found matching your criteria.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contact Freelancer Modal -->
+        <div id="contact-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Contact <span id="freelancer-name"></span></h2>
+                <form id="contact-form">
+                    <input type="hidden" id="freelancer-id" name="freelancer_id">
+                    
+                    <div class="form-group">
+                        <label for="message">Your Message</label>
+                        <textarea id="message" name="message" rows="5" placeholder="Write your message here" required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-paper-plane"></i> Send Message
+                    </button>
+                    <div class="loading-spinner" id="contact-spinner" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i> Sending message...
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>&copy; 2025 Skill Match Platform. All rights reserved.</p>
+    </footer>
+    
+    <script>
+        // Template for freelancer card
+        function createFreelancerCard(freelancer) {
+            // Generate star rating display
+            const rating = freelancer.rating || 0;
+            let starsHtml = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= Math.floor(rating)) {
+                    starsHtml += '<i class="fas fa-star"></i>';
+                } else if (i - 0.5 <= rating) {
+                    starsHtml += '<i class="fas fa-star-half-alt"></i>';
+                } else {
+                    starsHtml += '<i class="far fa-star"></i>';
+                }
+            }
+            
+            return `
+                <div class="card freelancer-card">
+                    <div class="card-header">
+                        <div class="user-avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="user-info">
+                            <h3>${freelancer.username}</h3>
+                            <div class="rating">
+                                ${starsHtml} <span>(${freelancer.rating || 0})</span>
+                            </div>
+                        </div>
+                        <div class="hourly-rate">
+                            <span>₹${freelancer.hourly_rate}/hr</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="skills-tags">
+                            ${(freelancer.skills || []).map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                        </div>
+                        <div class="stats">
+                            <div class="stat">
+                                <i class="fas fa-check-circle"></i>
+                                <span>${freelancer.completed_jobs || 0} Jobs Completed</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn-secondary contact-btn" data-freelancer-id="${freelancer.id}" data-freelancer-name="${freelancer.username}">
+                            <i class="fas fa-envelope"></i> Contact
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Load freelancers on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFreelancers();
+            
+            // Set up event listeners
+            document.getElementById('freelancer-filter-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                loadFreelancers();
+            });
+            
+            // Contact modal
+            const modal = document.getElementById('contact-modal');
+            const closeBtn = modal.querySelector('.close');
+            
+            closeBtn.onclick = function() {
+                modal.style.display = 'none';
+            };
+            
+            window.onclick = function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            };
+            
+            // Delegate click event for contact buttons
+            document.getElementById('freelancers-container').addEventListener('click', function(e) {
+                if (e.target.classList.contains('contact-btn') || e.target.parentElement.classList.contains('contact-btn')) {
+                    const button = e.target.classList.contains('contact-btn') ? e.target : e.target.parentElement;
+                    const freelancerId = button.getAttribute('data-freelancer-id');
+                    const freelancerName = button.getAttribute('data-freelancer-name');
+                    
+                    document.getElementById('freelancer-id').value = freelancerId;
+                    document.getElementById('freelancer-name').textContent = freelancerName;
+                    modal.style.display = 'block';
+                }
+            });
+            
+            // Contact form submission
+            document.getElementById('contact-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const freelancerId = document.getElementById('freelancer-id').value;
+                const message = document.getElementById('message').value;
+                
+                document.getElementById('contact-spinner').style.display = 'block';
+                
+                // Simulated API call since we don't have a messaging API in the backend
+                setTimeout(() => {
+                    document.getElementById('contact-spinner').style.display = 'none';
+                    alert('Message sent successfully! The freelancer will contact you soon.');
+                    modal.style.display = 'none';
+                    document.getElementById('contact-form').reset();
+                }, 1000);
+            });
+        });
+        
+        // Load freelancers from API
+        function loadFreelancers() {
+            const freelancersContainer = document.getElementById('freelancers-container');
+            const noFreelancersMessage = document.getElementById('no-freelancers-message');
+            
+            // Show loading spinner
+            freelancersContainer.innerHTML = `<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading freelancers...</div>`;
+            noFreelancersMessage.style.display = 'none';
+            
+            // Build query params
+            const skills = document.getElementById('skills-filter').value;
+            const maxRate = document.getElementById('max-rate').value;
+            const minRating = document.getElementById('min-rating').value;
+            
+            let queryParams = new URLSearchParams();
+            if (skills) queryParams.append('skills', skills);
+            if (maxRate) queryParams.append('max_rate', maxRate);
+            if (minRating) queryParams.append('min_rating', minRating);
+            
+            fetch('/api/freelancers/search?' + queryParams.toString())
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.freelancers.length > 0) {
+                        freelancersContainer.innerHTML = data.freelancers.map(createFreelancerCard).join('');
+                        noFreelancersMessage.style.display = 'none';
+                    } else {
+                        freelancersContainer.innerHTML = '';
+                        noFreelancersMessage.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    freelancersContainer.innerHTML = `<div class="error-message">Error loading freelancers. Please try again.</div>`;
+                    console.error('Freelancers loading error:', error);
+                });
+        }
+    </script>
+</body>
+</html>

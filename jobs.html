@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Find Jobs - Skill Match Platform</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-handshake"></i>
+            </div>
+            <h1>Available Jobs</h1>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="/dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li class="active"><a href="/jobs"><i class="fas fa-briefcase"></i> Find Jobs</a></li>
+                    <li><a href="/freelancers"><i class="fas fa-users"></i> Find Freelancers</a></li>
+                    <li><a href="/withdrawal"><i class="fas fa-wallet"></i> Withdraw Funds</a></li>
+                </ul>
+            </nav>
+        </header>
+        
+        <div class="content-area">
+            <div class="search-filters">
+                <h2>Filter Jobs</h2>
+                <form id="job-filter-form">
+                    <div class="form-group">
+                        <label for="skills-filter">Skills</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-tools"></i>
+                            <input type="text" id="skills-filter" name="skills" placeholder="e.g. JavaScript, Python, Design">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="min-budget">Minimum Budget (₹)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-rupee-sign"></i>
+                            <input type="number" id="min-budget" name="min_budget" min="0" placeholder="Minimum budget">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="job-status">Status</label>
+                        <select id="job-status" name="status">
+                            <option value="open" selected>Open</option>
+                            <option value="awarded">Awarded</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </form>
+            </div>
+            
+            <div class="results-area">
+                <h2>Available Jobs</h2>
+                <div id="jobs-container" class="cards-container">
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i> Loading jobs...
+                    </div>
+                </div>
+                
+                <div id="no-jobs-message" class="empty-message" style="display: none;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>No jobs found matching your criteria.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Job Application Modal -->
+        <div id="job-application-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Apply for Job: <span id="job-title"></span></h2>
+                <form id="job-application-form">
+                    <input type="hidden" id="job-id" name="job_id">
+                    
+                    <div class="form-group">
+                        <label for="proposal">Your Proposal</label>
+                        <textarea id="proposal" name="proposal" rows="5" placeholder="Describe why you're a good fit for this job" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="bid-amount">Your Bid (₹)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-rupee-sign"></i>
+                            <input type="number" id="bid-amount" name="bid_amount" min="1" placeholder="Your price for this job" required>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-paper-plane"></i> Submit Application
+                    </button>
+                    <div class="loading-spinner" id="application-spinner" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i> Submitting application...
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>&copy; 2025 Skill Match Platform. All rights reserved.</p>
+    </footer>
+    
+    <script>
+        // Template for job card
+        function createJobCard(job) {
+            const deadlineDate = new Date(job.deadline);
+            const formattedDeadline = deadlineDate.toLocaleDateString();
+            
+            return `
+                <div class="card job-card">
+                    <div class="card-header">
+                        <h3>${job.title}</h3>
+                        <span class="job-budget">₹${job.budget}</span>
+                    </div>
+                    <div class="card-body">
+                        <p>${job.description}</p>
+                        <div class="skills-tags">
+                            ${job.skills_required.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="job-info">
+                            <span><i class="fas fa-calendar"></i> Deadline: ${formattedDeadline}</span>
+                            <span><i class="fas fa-circle ${job.status === 'open' ? 'status-open' : job.status === 'awarded' ? 'status-awarded' : 'status-completed'}"></i> ${job.status.charAt(0).toUpperCase() + job.status.slice(1)}</span>
+                        </div>
+                        ${job.status === 'open' ? `<button class="btn-secondary apply-job-btn" data-job-id="${job.id}" data-job-title="${job.title}">
+                            <i class="fas fa-paper-plane"></i> Apply
+                        </button>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Load jobs on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadJobs();
+            
+            // Set up event listeners
+            document.getElementById('job-filter-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                loadJobs();
+            });
+            
+            // Job application modal
+            const modal = document.getElementById('job-application-modal');
+            const closeBtn = modal.querySelector('.close');
+            
+            closeBtn.onclick = function() {
+                modal.style.display = 'none';
+            };
+            
+            window.onclick = function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            };
+            
+            // Delegate click event for apply buttons
+            document.getElementById('jobs-container').addEventListener('click', function(e) {
+                if (e.target.classList.contains('apply-job-btn') || e.target.parentElement.classList.contains('apply-job-btn')) {
+                    const button = e.target.classList.contains('apply-job-btn') ? e.target : e.target.parentElement;
+                    const jobId = button.getAttribute('data-job-id');
+                    const jobTitle = button.getAttribute('data-job-title');
+                    
+                    document.getElementById('job-id').value = jobId;
+                    document.getElementById('job-title').textContent = jobTitle;
+                    modal.style.display = 'block';
+                }
+            });
+            
+            // Job application form submission
+            document.getElementById('job-application-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const jobId = document.getElementById('job-id').value;
+                const proposal = document.getElementById('proposal').value;
+                const bidAmount = parseFloat(document.getElementById('bid-amount').value);
+                
+                document.getElementById('application-spinner').style.display = 'block';
+                
+                fetch(`/api/jobs/${jobId}/apply`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        proposal: proposal,
+                        bid_amount: bidAmount
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('application-spinner').style.display = 'none';
+                    
+                    if (data.success) {
+                        alert('Your application has been submitted successfully!');
+                        modal.style.display = 'none';
+                        document.getElementById('job-application-form').reset();
+                        loadJobs(); // Refresh jobs list
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('application-spinner').style.display = 'none';
+                    alert('Network error. Please try again.');
+                    console.error('Application error:', error);
+                });
+            });
+        });
+        
+        // Load jobs from API
+        function loadJobs() {
+            const jobsContainer = document.getElementById('jobs-container');
+            const noJobsMessage = document.getElementById('no-jobs-message');
+            
+            // Show loading spinner
+            jobsContainer.innerHTML = `<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading jobs...</div>`;
+            noJobsMessage.style.display = 'none';
+            
+            // Build query params
+            const skills = document.getElementById('skills-filter').value;
+            const minBudget = document.getElementById('min-budget').value;
+            const status = document.getElementById('job-status').value;
+            
+            let queryParams = new URLSearchParams();
+            if (skills) queryParams.append('skills', skills);
+            if (minBudget) queryParams.append('min_budget', minBudget);
+            queryParams.append('status', status);
+            
+            fetch('/api/jobs/search?' + queryParams.toString())
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.jobs.length > 0) {
+                        jobsContainer.innerHTML = data.jobs.map(createJobCard).join('');
+                        noJobsMessage.style.display = 'none';
+                    } else {
+                        jobsContainer.innerHTML = '';
+                        noJobsMessage.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    jobsContainer.innerHTML = `<div class="error-message">Error loading jobs. Please try again.</div>`;
+                    console.error('Jobs loading error:', error);
+                });
+        }
+    </script>
+</body>
+</html>
